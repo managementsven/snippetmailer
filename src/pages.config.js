@@ -48,11 +48,17 @@
  * The mainPage value must match a key in the PAGES object exactly.
  */
 import Composer from './pages/Composer';
+import Snippets from './pages/Snippets';
+import Templates from './pages/Templates';
+import Drafts from './pages/Drafts';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
     "Composer": Composer,
+    "Snippets": Snippets,
+    "Templates": Templates,
+    "Drafts": Drafts,
 }
 
 export const pagesConfig = {
