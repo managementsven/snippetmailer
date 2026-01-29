@@ -51,6 +51,10 @@ import Composer from './pages/Composer';
 import Snippets from './pages/Snippets';
 import Templates from './pages/Templates';
 import Drafts from './pages/Drafts';
+import Categories from './pages/Categories';
+import TagsManager from './pages/TagsManager';
+import Cases from './pages/Cases';
+import Settings from './pages/Settings';
 import __Layout from './Layout.jsx';
 
 
@@ -59,6 +63,10 @@ export const PAGES = {
     "Snippets": Snippets,
     "Templates": Templates,
     "Drafts": Drafts,
+    "Categories": Categories,
+    "TagsManager": TagsManager,
+    "Cases": Cases,
+    "Settings": Settings,
 }
 
 export const pagesConfig = {
