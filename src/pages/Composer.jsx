@@ -355,7 +355,7 @@ export default function Composer() {
     <DragDropContext onDragEnd={handleDragEnd}>
       <div className="h-screen flex flex-col">
         {/* Header */}
-        <header className="h-16 border-b bg-white flex items-center justify-between px-4 lg:px-6 flex-shrink-0">
+        <header className="h-16 border-b bg-card flex items-center justify-between px-4 lg:px-6 flex-shrink-0">
           <div className="flex items-center gap-4">
             <Button
               variant="ghost"
@@ -485,7 +485,7 @@ export default function Composer() {
             "absolute lg:relative inset-y-0 left-0 z-40 lg:translate-x-0",
             sidebarOpen ? "translate-x-0" : "-translate-x-full"
           )}>
-            <div className="p-4 border-b bg-white">
+            <div className="p-4 border-b bg-card">
               <SnippetFilters
                 searchQuery={searchQuery}
                 setSearchQuery={setSearchQuery}
@@ -519,7 +519,7 @@ export default function Composer() {
                 isLoading={snippetsLoading}
               />
             </ScrollArea>
-            <div className="p-3 border-t bg-white text-xs text-slate-500 text-center">
+            <div className="p-3 border-t bg-card text-xs text-muted-foreground text-center">
               {filteredSnippets.length} Snippets gefunden
             </div>
           </aside>
@@ -527,7 +527,7 @@ export default function Composer() {
           {/* Email Builder */}
           <div className="flex-1 flex flex-col min-w-0">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-              <div className="border-b bg-white px-4">
+              <div className="border-b bg-card px-4">
                 <TabsList className="h-12 bg-transparent p-0 gap-4">
                   <TabsTrigger
                     value="edit"
