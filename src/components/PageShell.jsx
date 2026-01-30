@@ -2,13 +2,8 @@ import React from "react";
 import { cn } from "@/lib/utils";
 
 /**
- * Wiederverwendbare Page Shell mit konsistentem Layout
- * @param {string} title - Seitentitel
- * @param {string} subtitle - Optionaler Untertitel
- * @param {ReactNode} actions - Optionale Actions (Buttons) rechts oben
- * @param {ReactNode} toolbar - Optionale Toolbar unter dem Header
- * @param {ReactNode} children - Page Content
- * @param {string} className - Zusätzliche CSS Klassen für Content Area
+ * Vereinfachte PageShell für AppShell Layout
+ * Topbar + Content Area
  */
 export default function PageShell({ 
   title, 
@@ -19,18 +14,18 @@ export default function PageShell({
   className 
 }) {
   return (
-    <div className="h-screen flex flex-col bg-background">
-      {/* Header */}
-      <header className="h-16 border-b border-border bg-card flex items-center justify-between px-4 lg:px-6 flex-shrink-0">
+    <div className="flex-1 flex flex-col min-h-0">
+      {/* Topbar */}
+      <header className="h-14 border-b border-border bg-card flex items-center justify-between px-6 flex-shrink-0">
         <div className="min-w-0 flex-1">
-          <h1 className="text-lg font-semibold text-foreground truncate">{title}</h1>
+          <h1 className="text-base font-semibold text-foreground truncate">{title}</h1>
           {subtitle && (
-            <p className="text-sm text-muted-foreground truncate">{subtitle}</p>
+            <p className="text-xs text-muted-foreground truncate">{subtitle}</p>
           )}
         </div>
 
         {actions && (
-          <div className="flex items-center gap-3 flex-shrink-0 ml-4">
+          <div className="flex items-center gap-2 flex-shrink-0 ml-4">
             {actions}
           </div>
         )}
@@ -38,13 +33,13 @@ export default function PageShell({
 
       {/* Optional Toolbar */}
       {toolbar && (
-        <div className="border-b border-border bg-card px-4 py-3">
+        <div className="border-b border-border bg-card px-6 py-3 flex-shrink-0">
           {toolbar}
         </div>
       )}
 
-      {/* Content */}
-      <div className={cn("flex-1 overflow-y-auto", className)}>
+      {/* Scrollable Content */}
+      <div className={cn("flex-1 overflow-y-auto min-h-0", className)}>
         {children}
       </div>
     </div>
