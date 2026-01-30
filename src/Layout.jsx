@@ -1,10 +1,9 @@
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "./utils";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
-import { useTheme } from "@/components/ThemeProvider";
+import { ThemeProvider } from "@/components/ThemeProvider";
 import {
   Mail,
   FileText,
@@ -19,9 +18,7 @@ import {
   LogOut,
   User,
   Menu,
-  X,
-  Moon,
-  Sun
+  X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -34,10 +31,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
-export default function Layout({ children, currentPageName }) {
+function LayoutContent({ children, currentPageName }) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { resolvedTheme } = useTheme();
   const location = useLocation();
 
   const { data: user } = useQuery({
