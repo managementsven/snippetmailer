@@ -3,7 +3,6 @@ import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,6 +28,7 @@ import SnippetCard from "../components/snippets/SnippetCard";
 import SnippetFilters from "../components/snippets/SnippetFilters";
 import SnippetEditor from "../components/snippets/SnippetEditor";
 import SnippetVersionHistory from "../components/snippets/SnippetVersionHistory";
+import PageShell from "@/components/PageShell";
 
 export default function Snippets() {
   const queryClient = useQueryClient();
@@ -292,17 +292,13 @@ export default function Snippets() {
   const isFavorite = (snippet) => favorites.some(f => f.snippet_id === snippet.id);
 
   return (
-    <div className="h-screen flex flex-col">
-      {/* Header */}
-      <header className="h-16 border-b bg-white flex items-center justify-between px-4 lg:px-6 flex-shrink-0">
-        <div>
-          <h1 className="text-lg font-semibold text-slate-900">Snippets</h1>
-          <p className="text-sm text-slate-500">{filteredSnippets.length} Textbausteine</p>
-        </div>
-
-        <div className="flex items-center gap-3">
+    <PageShell
+      title="Snippets"
+      subtitle={`${filteredSnippets.length} Textbausteine`}
+      actions={
+        <>
           {/* View Toggle */}
-          <div className="flex items-center border rounded-lg p-1 bg-slate-50">
+          <div className="flex items-center border border-border rounded-lg p-1 bg-muted">
             <Button
               variant={viewMode === 'grid' ? 'default' : 'ghost'}
               size="sm"
@@ -333,11 +329,9 @@ export default function Snippets() {
               Neues Snippet
             </Button>
           )}
-        </div>
-      </header>
-
-      {/* Filters */}
-      <div className="p-4 border-b bg-white">
+        </>
+      }
+      toolbar={
         <SnippetFilters
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
@@ -358,19 +352,17 @@ export default function Snippets() {
           cases={cases}
           onReset={resetFilters}
         />
-      </div>
-
-      {/* Content */}
-      <ScrollArea className="flex-1">
-        <div className="p-4 lg:p-6">
+      }
+    >
+      <div className="p-4 lg:p-6">
           {snippetsLoading ? (
             <div className="flex items-center justify-center h-64">
-              <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
           ) : filteredSnippets.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-64 text-slate-500">
+            <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
               <FileText className="h-12 w-12 mb-3 opacity-30" />
-              <p className="text-sm font-medium">Keine Snippets gefunden</p>
+              <p className="text-sm font-medium text-foreground">Keine Snippets gefunden</p>
               <p className="text-xs mt-1">Versuche andere Filter oder erstelle ein neues Snippet</p>
             </div>
           ) : (
@@ -397,7 +389,6 @@ export default function Snippets() {
             </div>
           )}
         </div>
-      </ScrollArea>
 
       {/* Editor Dialog */}
       <SnippetEditor
@@ -443,6 +434,6 @@ export default function Snippets() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </PageShell>
   );
 }

@@ -46,6 +46,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import PageShell from "@/components/PageShell";
 
 export default function Templates() {
   const queryClient = useQueryClient();
@@ -207,35 +208,27 @@ export default function Templates() {
   );
 
   return (
-    <div className="h-screen flex flex-col">
-      {/* Header */}
-      <header className="h-16 border-b bg-white flex items-center justify-between px-4 lg:px-6 flex-shrink-0">
-        <div>
-          <h1 className="text-lg font-semibold text-slate-900">Templates</h1>
-          <p className="text-sm text-slate-500">{templates.length} Vorlagen</p>
-        </div>
-
-        <div className="flex items-center gap-3">
-          {isEditor && (
-            <Button
-              onClick={() => {
-                setSelectedTemplate(null);
-                resetForm();
-                setEditorOpen(true);
-              }}
-              className="gap-2"
-            >
-              <Plus className="h-4 w-4" />
-              Neues Template
-            </Button>
-          )}
-        </div>
-      </header>
-
-      {/* Search */}
-      <div className="p-4 border-b bg-white">
+    <PageShell
+      title="Templates"
+      subtitle={`${templates.length} Vorlagen`}
+      actions={
+        isEditor && (
+          <Button
+            onClick={() => {
+              setSelectedTemplate(null);
+              resetForm();
+              setEditorOpen(true);
+            }}
+            className="gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            Neues Template
+          </Button>
+        )
+      }
+      toolbar={
         <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Templates durchsuchen..."
             value={searchQuery}
@@ -243,38 +236,36 @@ export default function Templates() {
             className="pl-10"
           />
         </div>
-      </div>
-
-      {/* Content */}
-      <ScrollArea className="flex-1">
-        <div className="p-4 lg:p-6">
+      }
+    >
+      <div className="p-4 lg:p-6">
           {isLoading ? (
             <div className="flex items-center justify-center h-64">
-              <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
           ) : filteredTemplates.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-64 text-slate-500">
+            <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
               <LayoutTemplate className="h-12 w-12 mb-3 opacity-30" />
-              <p className="text-sm font-medium">Keine Templates gefunden</p>
+              <p className="text-sm font-medium text-foreground">Keine Templates gefunden</p>
               <p className="text-xs mt-1">Erstellen Sie ein neues Template</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
               {filteredTemplates.map(template => (
-                <Card key={template.id} className="p-4 hover:shadow-md transition-shadow">
+                <Card key={template.id} className="p-4 rounded-2xl hover:shadow-lg transition-all">
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-2">
-                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center">
-                        <LayoutTemplate className="h-5 w-5 text-indigo-600" />
+                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                        <LayoutTemplate className="h-5 w-5 text-primary" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-slate-900">{template.name}</h3>
+                        <h3 className="font-semibold text-foreground">{template.name}</h3>
                         <div className="flex items-center gap-2">
                           <Badge variant="outline" className="text-[10px]">
                             {template.language?.toUpperCase()}
                           </Badge>
                           {!template.is_active && (
-                            <Badge variant="secondary" className="text-[10px] bg-slate-100">
+                            <Badge variant="secondary" className="text-[10px]">
                               Inaktiv
                             </Badge>
                           )}
@@ -284,23 +275,23 @@ export default function Templates() {
                   </div>
 
                   {template.description && (
-                    <p className="text-sm text-slate-600 mb-3 line-clamp-2">
+                    <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
                       {template.description}
                     </p>
                   )}
 
-                  <div className="text-xs text-slate-500 mb-3">
+                  <div className="text-xs text-muted-foreground mb-3">
                     {template.snippet_ids?.length || 0} Snippets
                   </div>
 
                   {template.notes && (
-                    <p className="text-xs text-slate-400 bg-slate-50 rounded p-2 mb-3 line-clamp-2">
+                    <p className="text-xs text-muted-foreground bg-muted rounded p-2 mb-3 line-clamp-2">
                       💡 {template.notes}
                     </p>
                   )}
 
                   {isEditor && (
-                    <div className="flex items-center gap-2 pt-3 border-t">
+                    <div className="flex items-center gap-2 pt-3 border-t border-border">
                       <Button
                         variant="ghost"
                         size="sm"
@@ -315,7 +306,7 @@ export default function Templates() {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleDelete(template)}
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50 gap-1"
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10 gap-1"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
                         </Button>
@@ -327,7 +318,6 @@ export default function Templates() {
             </div>
           )}
         </div>
-      </ScrollArea>
 
       {/* Editor Dialog */}
       <Dialog open={editorOpen} onOpenChange={setEditorOpen}>
@@ -559,6 +549,6 @@ export default function Templates() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </PageShell>
   );
 }
