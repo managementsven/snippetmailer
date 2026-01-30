@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from "react";
+
+import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "./utils";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
+import { useTheme } from "@/components/ThemeProvider";
 import {
   Mail,
   FileText,
@@ -35,20 +37,8 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 export default function Layout({ children, currentPageName }) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [darkMode, setDarkMode] = useState(() => {
-    const saved = localStorage.getItem('darkMode');
-    return saved ? JSON.parse(saved) : false;
-  });
+  const { resolvedTheme } = useTheme();
   const location = useLocation();
-
-  useEffect(() => {
-    localStorage.setItem('darkMode', JSON.stringify(darkMode));
-    if (darkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [darkMode]);
 
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
@@ -76,15 +66,9 @@ export default function Layout({ children, currentPageName }) {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50/50 dark:bg-slate-900">
-      <style>{`
-        .dark {
-          --background: 222.2 84% 4.9%;
-          --foreground: 210 40% 98%;
-        }
-      `}</style>
+    <div className="min-h-screen bg-background">
       {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 z-50 flex items-center px-4">
+      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-card border-b border-border z-50 flex items-center px-4">
         <Button
           variant="ghost"
           size="icon"
@@ -96,16 +80,8 @@ export default function Layout({ children, currentPageName }) {
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
             <Mail className="h-4 w-4 text-white" />
           </div>
-          <span className="font-semibold text-slate-900 dark:text-slate-100">MailComposer</span>
+          <span className="font-semibold text-foreground">MailComposer</span>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setDarkMode(!darkMode)}
-          className="ml-auto mr-2"
-        >
-          {darkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-        </Button>
       </div>
 
       {/* Mobile Overlay */}
@@ -118,14 +94,14 @@ export default function Layout({ children, currentPageName }) {
 
       {/* Sidebar */}
       <aside className={cn(
-        "fixed top-0 left-0 h-full bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 z-50 transition-all duration-300 flex flex-col",
+        "fixed top-0 left-0 h-full bg-card border-r border-border z-50 transition-all duration-300 flex flex-col",
         collapsed ? "w-[72px]" : "w-64",
         "lg:translate-x-0",
         mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
       )}>
         {/* Logo */}
         <div className={cn(
-          "h-16 border-b border-slate-100 flex items-center px-4",
+          "h-16 border-b border-border flex items-center px-4",
           collapsed ? "justify-center" : "justify-between"
         )}>
           {!collapsed && (
@@ -134,8 +110,8 @@ export default function Layout({ children, currentPageName }) {
                 <Mail className="h-5 w-5 text-white" />
               </div>
               <div>
-                <h1 className="font-bold text-slate-900 dark:text-slate-100 text-sm">MailComposer</h1>
-                <p className="text-[10px] text-slate-500 dark:text-slate-400">Support Tool</p>
+                <h1 className="font-bold text-foreground text-sm">MailComposer</h1>
+                <p className="text-[10px] text-muted-foreground">Support Tool</p>
               </div>
             </div>
           )}
@@ -144,24 +120,14 @@ export default function Layout({ children, currentPageName }) {
               <Mail className="h-5 w-5 text-white" />
             </div>
           )}
-          <div className="flex items-center gap-1">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-              onClick={() => setDarkMode(!darkMode)}
-            >
-              {darkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="hidden lg:flex h-8 w-8 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
-              onClick={() => setCollapsed(!collapsed)}
-            >
-              {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-            </Button>
-          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="hidden lg:flex h-8 w-8"
+            onClick={() => setCollapsed(!collapsed)}
+          >
+            {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+          </Button>
         </div>
 
         {/* Navigation */}
@@ -174,16 +140,13 @@ export default function Layout({ children, currentPageName }) {
                 to={createPageUrl(item.page)}
                 onClick={() => setMobileOpen(false)}
                 className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group",
+                  "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200",
                   isActive 
-                    ? "bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400" 
-                    : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-slate-200"
+                    ? "bg-primary/10 text-primary" 
+                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                 )}
               >
-                <item.icon className={cn(
-                  "h-5 w-5 flex-shrink-0",
-                  isActive ? "text-indigo-600 dark:text-indigo-400" : "text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300"
-                )} />
+                <item.icon className="h-5 w-5 flex-shrink-0" />
                 {!collapsed && (
                   <span className="font-medium text-sm">{item.name}</span>
                 )}
@@ -198,11 +161,11 @@ export default function Layout({ children, currentPageName }) {
                 collapsed ? "px-2" : "px-3"
               )}>
                 {!collapsed && (
-                  <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     Verwaltung
                   </span>
                 )}
-                {collapsed && <div className="h-px bg-slate-200 dark:bg-slate-700" />}
+                {collapsed && <div className="h-px bg-border" />}
               </div>
               {adminItems.map((item) => {
                 const isActive = currentPageName === item.page;
@@ -212,16 +175,13 @@ export default function Layout({ children, currentPageName }) {
                     to={createPageUrl(item.page)}
                     onClick={() => setMobileOpen(false)}
                     className={cn(
-                      "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group",
+                      "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200",
                       isActive 
-                        ? "bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400" 
-                        : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-slate-200"
+                        ? "bg-primary/10 text-primary" 
+                        : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                     )}
                   >
-                    <item.icon className={cn(
-                      "h-5 w-5 flex-shrink-0",
-                      isActive ? "text-indigo-600 dark:text-indigo-400" : "text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300"
-                    )} />
+                    <item.icon className="h-5 w-5 flex-shrink-0" />
                     {!collapsed && (
                       <span className="font-medium text-sm">{item.name}</span>
                     )}
@@ -234,26 +194,26 @@ export default function Layout({ children, currentPageName }) {
 
         {/* User */}
         <div className={cn(
-          "p-3 border-t border-slate-100 dark:border-slate-700",
+          "p-3 border-t border-border",
           collapsed ? "flex justify-center" : ""
         )}>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className={cn(
-                "flex items-center gap-3 w-full p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors",
+                "flex items-center gap-3 w-full p-2 rounded-xl hover:bg-accent transition-colors",
                 collapsed ? "justify-center" : ""
               )}>
-                <Avatar className="h-9 w-9 border-2 border-slate-100 dark:border-slate-700">
-                  <AvatarFallback className="bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/30 dark:to-purple-900/30 text-indigo-600 dark:text-indigo-400 text-sm font-semibold">
+                <Avatar className="h-9 w-9 border-2 border-border">
+                  <AvatarFallback className="bg-primary/10 text-primary text-sm font-semibold">
                     {user?.full_name?.charAt(0) || user?.email?.charAt(0) || 'U'}
                   </AvatarFallback>
                 </Avatar>
                 {!collapsed && (
                   <div className="flex-1 text-left min-w-0">
-                    <p className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">
+                    <p className="text-sm font-medium text-foreground truncate">
                       {user?.full_name || 'Benutzer'}
                     </p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                    <p className="text-xs text-muted-foreground truncate">
                       {user?.app_role || user?.role || 'user'}
                     </p>
                   </div>
@@ -263,7 +223,7 @@ export default function Layout({ children, currentPageName }) {
             <DropdownMenuContent align="end" className="w-56">
               <div className="px-2 py-1.5">
                 <p className="text-sm font-medium">{user?.full_name}</p>
-                <p className="text-xs text-slate-500">{user?.email}</p>
+                <p className="text-xs text-muted-foreground">{user?.email}</p>
               </div>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
