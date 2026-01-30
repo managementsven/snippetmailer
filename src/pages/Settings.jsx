@@ -28,6 +28,7 @@ import { toast } from "sonner";
 
 export default function Settings() {
   const queryClient = useQueryClient();
+  const { theme, setTheme } = useTheme();
   const [hasChanges, setHasChanges] = useState(false);
 
   const { data: user, isLoading: userLoading } = useQuery({
