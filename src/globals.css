@@ -1,0 +1,208 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Radical Dark Mode Overhaul - Enforced Soft Theme */
+@layer base {
+  :root {
+    --background: 222 47% 11%;
+    --foreground: 210 20% 92%;
+    --card: 222 47% 14%;
+    --card-foreground: 210 20% 92%;
+    --popover: 222 47% 14%;
+    --popover-foreground: 210 20% 92%;
+    --primary: 217 91% 60%;
+    --primary-foreground: 222 47% 11%;
+    --secondary: 222 47% 18%;
+    --secondary-foreground: 210 20% 92%;
+    --muted: 222 47% 18%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 222 47% 20%;
+    --accent-foreground: 210 20% 92%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 210 20% 98%;
+    --border: 222 47% 22%;
+    --input: 222 47% 10%;
+    --ring: 217 91% 60%;
+    --radius: 0.75rem;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+  }
+
+  .dark {
+    --background: 222 47% 11%;
+    --foreground: 210 20% 92%;
+    --card: 222 47% 14%;
+    --card-foreground: 210 20% 92%;
+    --popover: 222 47% 14%;
+    --popover-foreground: 210 20% 92%;
+    --primary: 217 91% 60%;
+    --primary-foreground: 222 47% 11%;
+    --secondary: 222 47% 18%;
+    --secondary-foreground: 210 20% 92%;
+    --muted: 222 47% 18%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 222 47% 20%;
+    --accent-foreground: 210 20% 92%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 210 20% 98%;
+    --border: 222 47% 22%;
+    --input: 222 47% 10%;
+    --ring: 217 91% 60%;
+  }
+
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    font-size: 16px;
+    line-height: 1.65;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    line-height: 1.35;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+  
+  h1 { font-size: 2rem; }
+  h2 { font-size: 1.5rem; }
+  h3 { font-size: 1.25rem; }
+  h4 { font-size: 1.125rem; }
+  
+  p {
+    line-height: 1.75;
+  }
+}
+
+/* Enforced Input Styling - NO WHITE BACKGROUNDS ALLOWED */
+@layer components {
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="search"],
+  input[type="number"],
+  textarea,
+  select {
+    @apply bg-input text-foreground border-border;
+    @apply placeholder:text-muted-foreground;
+  }
+  
+  input:focus,
+  textarea:focus,
+  select:focus {
+    @apply ring-2 ring-ring ring-offset-0 border-transparent;
+  }
+  
+  /* Override any browser defaults */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 1000px hsl(var(--input)) inset !important;
+    -webkit-text-fill-color: hsl(var(--foreground)) !important;
+  }
+}
+
+/* ReactMarkdown Dark Mode Styling - Enhanced Readability */
+.prose-dark {
+  @apply text-foreground;
+  line-height: 1.8;
+}
+
+.prose-dark h1,
+.prose-dark h2,
+.prose-dark h3,
+.prose-dark h4,
+.prose-dark h5,
+.prose-dark h6 {
+  @apply text-foreground font-semibold;
+  letter-spacing: -0.02em;
+  margin-top: 2em;
+  margin-bottom: 0.75em;
+}
+
+.prose-dark h1 { font-size: 1.875rem; }
+.prose-dark h2 { font-size: 1.5rem; }
+.prose-dark h3 { font-size: 1.25rem; }
+
+.prose-dark strong {
+  @apply text-foreground font-semibold;
+}
+
+.prose-dark code {
+  @apply bg-muted/50 text-primary px-2 py-1 rounded-md text-sm border border-border/50;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+.prose-dark pre {
+  @apply bg-[hsl(222,47%,8%)] border border-border/30 rounded-xl p-5;
+  overflow-x: auto;
+}
+
+.prose-dark pre code {
+  @apply bg-transparent p-0 border-0;
+  color: hsl(210, 20%, 85%);
+}
+
+.prose-dark blockquote {
+  @apply border-l-4 border-primary/30 pl-5 italic text-muted-foreground;
+  background: hsl(222, 47%, 16%);
+  padding: 1rem 1rem 1rem 1.25rem;
+  border-radius: 0.5rem;
+}
+
+.prose-dark a {
+  @apply text-primary hover:underline underline-offset-4;
+  transition: all 0.2s;
+}
+
+.prose-dark a:hover {
+  @apply text-primary brightness-110;
+}
+
+.prose-dark ul,
+.prose-dark ol {
+  @apply text-foreground;
+  line-height: 1.8;
+  margin: 1.5em 0;
+}
+
+.prose-dark li {
+  margin: 0.5em 0;
+}
+
+.prose-dark p {
+  margin: 1.25em 0;
+  line-height: 1.8;
+}
+
+/* Card Hover Effects */
+.card-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+}
+
+/* Subtle Border Reduction */
+.border-subtle {
+  border-color: hsl(222, 47%, 20%);
+}
+
+/* Editor vs Preview Distinction */
+.editor-area {
+  background: hsl(222, 47%, 9%);
+}
+
+.preview-area {
+  background: hsl(222, 47%, 12%);
+}
