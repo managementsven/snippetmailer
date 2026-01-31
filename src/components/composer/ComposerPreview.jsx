@@ -90,12 +90,12 @@ export default function ComposerPreview({
   const hasContent = draft?.subject || emailContent.trim();
 
   return (
-    <div className="h-full flex flex-col bg-background">
+    <div className="h-full flex flex-col bg-[hsl(222,15%,12%)]">
       {/* Header */}
-      <div className="p-4 border-b border-border flex items-center justify-between">
+      <div className="p-4 border-b border-border flex items-center justify-between bg-card/30">
         <div className="flex items-center gap-2">
           <Mail className="h-4 w-4 text-muted-foreground" />
-          <span className="text-sm font-medium text-foreground">E-Mail Vorschau</span>
+          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">E-Mail Vorschau</span>
         </div>
         <div className="flex items-center gap-2">
           <Button
@@ -187,17 +187,17 @@ export default function ComposerPreview({
                 })()}
 
                 {draft?.signature && (
-                  <div className="mt-6 pt-4 border-t border-border">
-                    <p className="whitespace-pre-line text-muted-foreground">{draft.signature}</p>
+                  <div className="mt-6 pt-5 border-t border-border/50">
+                    <p className="whitespace-pre-line text-muted-foreground/80 leading-relaxed">{draft.signature}</p>
                   </div>
                 )}
               </div>
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
-              <FileText className="h-12 w-12 mb-3 opacity-20" />
-              <p className="text-sm font-medium">Keine Vorschau verfügbar</p>
-              <p className="text-xs mt-1 opacity-60">Füge Snippets hinzu, um die E-Mail zu sehen</p>
+              <FileText className="h-12 w-12 mb-4 opacity-20" />
+              <p className="text-sm font-medium text-foreground/70">Keine Vorschau verfügbar</p>
+              <p className="text-xs mt-1.5 text-muted-foreground/60">Füge Snippets hinzu, um die E-Mail zu sehen</p>
             </div>
           )}
         </div>

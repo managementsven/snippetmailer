@@ -60,12 +60,12 @@ export default function ComposerEmailBuilder({
   const sortedItems = [...(draft?.snippet_items || [])].sort((a, b) => a.order - b.order);
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col bg-[hsl(222,15%,10%)]">
       {/* Subject */}
-      <div className="p-4 border-b border-border bg-card">
+      <div className="p-5 border-b border-border bg-card/50">
         <div className="space-y-3">
-          <div className="space-y-1.5">
-            <Label htmlFor="subject" className="text-xs font-medium text-muted-foreground">
+          <div className="space-y-2">
+            <Label htmlFor="subject" className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
               Betreff
             </Label>
             <Input
@@ -73,14 +73,14 @@ export default function ComposerEmailBuilder({
               value={draft?.subject || ''}
               onChange={(e) => onUpdateDraft({ subject: e.target.value })}
               placeholder="E-Mail-Betreff eingeben..."
-              className="text-sm"
+              className="text-sm bg-input border-border h-10"
             />
           </div>
         </div>
       </div>
 
       {/* Email Body */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3">
+      <div className="flex-1 overflow-y-auto p-5 space-y-3 bg-[hsl(222,15%,10%)]">
         {/* Greeting */}
         <Collapsible open={greetingOpen} onOpenChange={setGreetingOpen}>
           <Card className="border-dashed border-border bg-card">
