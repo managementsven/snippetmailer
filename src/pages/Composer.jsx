@@ -4,7 +4,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { DragDropContext } from "@hello-pangea/dnd";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -20,43 +19,27 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   LayoutTemplate,
   Save,
-  FileText,
-  Eye,
-  PanelLeftClose,
-  PanelLeft,
-  Loader2,
   Plus,
-  Star,
   Check,
   RefreshCw,
+  Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
 import { debounce } from "lodash";
 
-import SnippetFilters from "../components/snippets/SnippetFilters";
-import ComposerSnippetList from "../components/composer/ComposerSnippetList";
+import SnippetPickerDrawer from "../components/composer/SnippetPickerDrawer";
 import ComposerEmailBuilder from "../components/composer/ComposerEmailBuilder";
 import ComposerPreview from "../components/composer/ComposerPreview";
 
 export default function Composer() {
   const queryClient = useQueryClient();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [previewOpen, setPreviewOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('edit');
+  const [snippetPickerOpen, setSnippetPickerOpen] = useState(false);
   
   // Filters
-  const [searchQuery, setSearchQuery] = useState('');
   const [language, setLanguage] = useState('de');
-  const [status, setStatus] = useState('published');
-  const [selectedCategories, setSelectedCategories] = useState([]);
-  const [selectedTags, setSelectedTags] = useState([]);
-  const [selectedCases, setSelectedCases] = useState([]);
-  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   
   // Draft state
   const [currentDraftId, setCurrentDraftId] = useState(null);
@@ -76,7 +59,7 @@ export default function Composer() {
     queryFn: () => base44.auth.me(),
   });
 
-  const { data: snippets = [], isLoading: snippetsLoading } = useQuery({
+  const { data: snippets = [] } = useQuery({
     queryKey: ['snippets'],
     queryFn: () => base44.entities.Snippet.list('-updated_date', 500),
   });
@@ -101,18 +84,6 @@ export default function Composer() {
     queryFn: () => base44.entities.Template.filter({ is_active: true }, 'name', 100),
   });
 
-  const { data: favorites = [] } = useQuery({
-    queryKey: ['favorites', user?.email],
-    queryFn: () => base44.entities.Favorite.filter({ user_email: user?.email }),
-    enabled: !!user?.email,
-  });
-
-  const { data: drafts = [] } = useQuery({
-    queryKey: ['drafts', user?.email],
-    queryFn: () => base44.entities.Draft.filter({ created_by: user?.email }, '-updated_date', 50),
-    enabled: !!user?.email,
-  });
-
   // Mutations
   const saveDraftMutation = useMutation({
     mutationFn: async (data) => {
@@ -129,61 +100,9 @@ export default function Composer() {
       setHasUnsavedChanges(false);
       setLastSaved(new Date());
       queryClient.invalidateQueries({ queryKey: ['drafts'] });
+      toast.success('Entwurf gespeichert');
     },
   });
-
-  // Filter snippets
-  const filteredSnippets = useMemo(() => {
-    let result = snippets;
-
-    // Language filter
-    if (language !== 'all') {
-      result = result.filter(s => s.language === language);
-    }
-
-    // Status filter
-    if (status !== 'all') {
-      result = result.filter(s => s.status === status);
-    }
-
-    // Categories filter
-    if (selectedCategories.length > 0) {
-      result = result.filter(s => 
-        selectedCategories.some(catId => s.categories?.includes(catId))
-      );
-    }
-
-    // Tags filter
-    if (selectedTags.length > 0) {
-      result = result.filter(s => 
-        selectedTags.some(tagId => s.tags?.includes(tagId))
-      );
-    }
-
-    // Cases filter
-    if (selectedCases.length > 0) {
-      result = result.filter(s => 
-        selectedCases.some(caseId => s.cases?.includes(caseId))
-      );
-    }
-
-    // Favorites filter
-    if (showFavoritesOnly) {
-      const favoriteIds = favorites.map(f => f.snippet_id);
-      result = result.filter(s => favoriteIds.includes(s.id));
-    }
-
-    // Search filter
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      result = result.filter(s => 
-        s.title?.toLowerCase().includes(query) ||
-        s.content?.toLowerCase().includes(query)
-      );
-    }
-
-    return result;
-  }, [snippets, language, status, selectedCategories, selectedTags, selectedCases, showFavoritesOnly, favorites, searchQuery]);
 
   // Auto-save debounced
   const debouncedSave = useCallback(
@@ -336,16 +255,6 @@ export default function Composer() {
     setHasUnsavedChanges(false);
   };
 
-  // Reset filters
-  const resetFilters = () => {
-    setSearchQuery('');
-    setStatus('published');
-    setSelectedCategories([]);
-    setSelectedTags([]);
-    setSelectedCases([]);
-    setShowFavoritesOnly(false);
-  };
-
   // Missing snippets
   const missingSnippets = draftData.snippet_items
     ?.filter(item => !snippets.find(s => s.id === item.snippet_id))
@@ -353,29 +262,21 @@ export default function Composer() {
 
   return (
     <DragDropContext onDragEnd={handleDragEnd}>
-      <div className="h-screen flex flex-col">
-        {/* Header */}
-        <header className="h-16 border-b bg-card flex items-center justify-between px-4 lg:px-6 flex-shrink-0">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="lg:hidden"
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-            >
-              {sidebarOpen ? <PanelLeftClose className="h-5 w-5" /> : <PanelLeft className="h-5 w-5" />}
-            </Button>
-            <div>
-              <h1 className="text-lg font-semibold text-slate-900">E-Mail Composer</h1>
-              <div className="flex items-center gap-2 text-sm text-slate-500">
+      <div className="flex-1 flex flex-col min-h-0">
+        {/* Topbar */}
+        <header className="h-14 border-b border-border bg-card flex items-center justify-between px-6 flex-shrink-0">
+          <div className="flex items-center gap-4 min-w-0 flex-1">
+            <div className="min-w-0">
+              <h1 className="text-base font-semibold text-foreground">E-Mail Composer</h1>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 {hasUnsavedChanges && (
-                  <span className="flex items-center gap-1 text-amber-600">
+                  <span className="flex items-center gap-1 text-amber-500">
                     <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
                     Ungespeichert
                   </span>
                 )}
                 {lastSaved && !hasUnsavedChanges && (
-                  <span className="flex items-center gap-1 text-emerald-600">
+                  <span className="flex items-center gap-1 text-emerald-500">
                     <Check className="h-3 w-3" />
                     Gespeichert
                   </span>
@@ -384,13 +285,12 @@ export default function Composer() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            {/* Language Selector */}
+          <div className="flex items-center gap-2 flex-shrink-0">
             <Select value={language} onValueChange={(val) => {
               setLanguage(val);
               updateDraft({ language: val });
             }}>
-              <SelectTrigger className="w-28 h-9">
+              <SelectTrigger className="w-24 h-8 text-xs">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -399,12 +299,11 @@ export default function Composer() {
               </SelectContent>
             </Select>
 
-            {/* Templates */}
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-2">
-                  <LayoutTemplate className="h-4 w-4" />
-                  <span className="hidden sm:inline">Templates</span>
+                <Button variant="outline" size="sm" className="gap-2 h-8">
+                  <LayoutTemplate className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline text-xs">Templates</span>
                 </Button>
               </SheetTrigger>
               <SheetContent>
@@ -416,169 +315,103 @@ export default function Composer() {
                     {templates.filter(t => t.language === language || language === 'all').map(template => (
                       <div
                         key={template.id}
-                        className="p-4 border rounded-lg hover:border-indigo-200 hover:bg-indigo-50/30 cursor-pointer transition-colors"
+                        className="p-3 border border-border rounded-lg hover:bg-accent cursor-pointer transition-colors"
                         onClick={() => loadTemplate(template)}
                       >
                         <div className="flex items-center justify-between mb-1">
-                          <h4 className="font-medium text-slate-900">{template.name}</h4>
+                          <h4 className="font-medium text-sm text-foreground">{template.name}</h4>
                           <Badge variant="outline" className="text-[10px]">
                             {template.language?.toUpperCase()}
                           </Badge>
                         </div>
                         {template.description && (
-                          <p className="text-sm text-slate-500 mb-2">{template.description}</p>
+                          <p className="text-xs text-muted-foreground mb-2">{template.description}</p>
                         )}
-                        <p className="text-xs text-slate-400">
+                        <p className="text-[10px] text-muted-foreground">
                           {template.snippet_ids?.length || 0} Snippets
                         </p>
                       </div>
                     ))}
-                    {templates.length === 0 && (
-                      <div className="text-center py-8 text-slate-500">
-                        <LayoutTemplate className="h-8 w-8 mx-auto mb-2 opacity-30" />
-                        <p className="text-sm">Keine Templates verfügbar</p>
-                      </div>
-                    )}
                   </div>
                 </ScrollArea>
               </SheetContent>
             </Sheet>
 
-            {/* New Draft */}
-            <Button variant="outline" size="sm" onClick={newDraft} className="gap-2">
-              <Plus className="h-4 w-4" />
-              <span className="hidden sm:inline">Neu</span>
+            <Button variant="outline" size="sm" onClick={newDraft} className="gap-2 h-8">
+              <RefreshCw className="h-3.5 w-3.5" />
             </Button>
 
-            {/* Preview Toggle (Mobile) */}
-            <Button
-              variant="outline"
-              size="sm"
-              className="lg:hidden gap-2"
-              onClick={() => setPreviewOpen(!previewOpen)}
-            >
-              <Eye className="h-4 w-4" />
-            </Button>
-
-            {/* Save */}
             <Button
               size="sm"
               onClick={() => saveDraftMutation.mutate(draftData)}
               disabled={saveDraftMutation.isPending}
-              className="gap-2"
+              className="gap-2 h-8"
             >
               {saveDraftMutation.isPending ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
               ) : (
-                <Save className="h-4 w-4" />
+                <Save className="h-3.5 w-3.5" />
               )}
-              <span className="hidden sm:inline">Speichern</span>
+              <span className="hidden sm:inline text-xs">Speichern</span>
             </Button>
           </div>
         </header>
 
-        {/* Main Content */}
-        <div className="flex-1 flex overflow-hidden">
-          {/* Sidebar - Snippet Library */}
-          <aside className={cn(
-            "w-80 border-r bg-slate-50/50 flex flex-col flex-shrink-0 transition-all duration-300",
-            "absolute lg:relative inset-y-0 left-0 z-40 lg:translate-x-0",
-            sidebarOpen ? "translate-x-0" : "-translate-x-full"
-          )}>
-            <div className="p-4 border-b bg-card">
-              <SnippetFilters
-                searchQuery={searchQuery}
-                setSearchQuery={setSearchQuery}
-                language={language}
-                setLanguage={setLanguage}
-                status={status}
-                setStatus={setStatus}
-                selectedCategories={selectedCategories}
-                setSelectedCategories={setSelectedCategories}
-                selectedTags={selectedTags}
-                setSelectedTags={setSelectedTags}
-                selectedCases={selectedCases}
-                setSelectedCases={setSelectedCases}
-                showFavoritesOnly={showFavoritesOnly}
-                setShowFavoritesOnly={setShowFavoritesOnly}
-                categories={categories}
-                tags={tags}
-                cases={cases}
-                onReset={resetFilters}
-                compact
+        {/* 2-Panel Layout: Editor + Preview */}
+        <div className="flex-1 flex min-h-0">
+          {/* Left: Editor */}
+          <div className="flex-1 flex flex-col min-h-0 min-w-0 border-r border-border">
+            <div className="flex items-center justify-between px-4 py-2 border-b border-border bg-card">
+              <span className="text-xs font-medium text-muted-foreground">Editor</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSnippetPickerOpen(true)}
+                className="h-7 text-xs gap-1"
+              >
+                <Plus className="h-3 w-3" />
+                Snippet
+              </Button>
+            </div>
+            <div className="flex-1 overflow-y-auto min-h-0">
+              <ComposerEmailBuilder
+                draft={draftData}
+                snippets={snippets}
+                onUpdateDraft={updateDraft}
+                onRemoveSnippet={removeSnippetFromDraft}
+                onUpdateSnippetOverride={updateSnippetOverride}
+                onResetSnippetOverride={resetSnippetOverride}
               />
             </div>
-            <ScrollArea className="flex-1">
-              <ComposerSnippetList
-                snippets={filteredSnippets}
-                categories={categories}
-                tags={tags}
-                cases={cases}
-                favorites={favorites}
-                onAddSnippet={addSnippetToDraft}
-                isLoading={snippetsLoading}
-              />
-            </ScrollArea>
-            <div className="p-3 border-t bg-card text-xs text-muted-foreground text-center">
-              {filteredSnippets.length} Snippets gefunden
-            </div>
-          </aside>
-
-          {/* Email Builder */}
-          <div className="flex-1 flex flex-col min-w-0">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-              <div className="border-b bg-card px-4">
-                <TabsList className="h-12 bg-transparent p-0 gap-4">
-                  <TabsTrigger
-                    value="edit"
-                    className="data-[state=active]:bg-transparent data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-indigo-600 rounded-none px-1 pb-3"
-                  >
-                    <FileText className="h-4 w-4 mr-2" />
-                    Bearbeiten
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="preview"
-                    className="data-[state=active]:bg-transparent data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-indigo-600 rounded-none px-1 pb-3"
-                  >
-                    <Eye className="h-4 w-4 mr-2" />
-                    Vorschau
-                  </TabsTrigger>
-                </TabsList>
-              </div>
-
-              <TabsContent value="edit" className="flex-1 m-0 overflow-hidden">
-                <div className="h-full bg-slate-50/50">
-                  <ComposerEmailBuilder
-                    draft={draftData}
-                    snippets={snippets}
-                    onUpdateDraft={updateDraft}
-                    onRemoveSnippet={removeSnippetFromDraft}
-                    onUpdateSnippetOverride={updateSnippetOverride}
-                    onResetSnippetOverride={resetSnippetOverride}
-                  />
-                </div>
-              </TabsContent>
-
-              <TabsContent value="preview" className="flex-1 m-0 overflow-hidden">
-                <ComposerPreview
-                  draft={draftData}
-                  snippets={snippets}
-                  missingSnippets={missingSnippets}
-                />
-              </TabsContent>
-            </Tabs>
           </div>
 
-          {/* Desktop Preview Panel */}
-          <aside className="hidden xl:block w-96 border-l flex-shrink-0">
-            <ComposerPreview
-              draft={draftData}
-              snippets={snippets}
-              missingSnippets={missingSnippets}
-            />
-          </aside>
+          {/* Right: Preview */}
+          <div className="w-[480px] flex-shrink-0 hidden lg:flex flex-col min-h-0">
+            <div className="px-4 py-2 border-b border-border bg-card">
+              <span className="text-xs font-medium text-muted-foreground">Vorschau</span>
+            </div>
+            <div className="flex-1 overflow-y-auto min-h-0">
+              <ComposerPreview
+                draft={draftData}
+                snippets={snippets}
+                missingSnippets={missingSnippets}
+              />
+            </div>
+          </div>
         </div>
       </div>
+
+      {/* Snippet Picker Drawer */}
+      <SnippetPickerDrawer
+        open={snippetPickerOpen}
+        onOpenChange={setSnippetPickerOpen}
+        snippets={snippets}
+        categories={categories}
+        tags={tags}
+        cases={cases}
+        onAddSnippet={addSnippetToDraft}
+        language={language}
+      />
     </DragDropContext>
   );
 }

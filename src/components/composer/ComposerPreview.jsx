@@ -90,12 +90,12 @@ export default function ComposerPreview({
   const hasContent = draft?.subject || emailContent.trim();
 
   return (
-    <div className="h-full flex flex-col bg-white">
+    <div className="h-full flex flex-col bg-background">
       {/* Header */}
-      <div className="p-4 border-b flex items-center justify-between">
+      <div className="p-4 border-b border-border flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Mail className="h-5 w-5 text-slate-400" />
-          <span className="font-medium text-slate-700">E-Mail Vorschau</span>
+          <Mail className="h-4 w-4 text-muted-foreground" />
+          <span className="text-sm font-medium text-foreground">E-Mail Vorschau</span>
         </div>
         <div className="flex items-center gap-2">
           <Button
@@ -129,14 +129,14 @@ export default function ComposerPreview({
 
       {/* Missing Snippets Warning */}
       {missingSnippets.length > 0 && (
-        <div className="mx-4 mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+        <div className="mx-4 mt-4 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
           <div className="flex items-start gap-2">
-            <AlertCircle className="h-4 w-4 text-amber-600 mt-0.5" />
+            <AlertCircle className="h-4 w-4 text-amber-500 mt-0.5" />
             <div>
-              <p className="text-sm font-medium text-amber-800">
+              <p className="text-sm font-medium text-amber-600">
                 Einige Snippets sind nicht mehr verfügbar
               </p>
-              <ul className="mt-1 text-xs text-amber-700">
+              <ul className="mt-1 text-xs text-amber-600/80">
                 {missingSnippets.map(id => (
                   <li key={id}>• ID: {id}</li>
                 ))}
@@ -152,22 +152,22 @@ export default function ComposerPreview({
           {hasContent ? (
             <div className="max-w-2xl mx-auto">
               {/* Email Header */}
-              <div className="mb-6 pb-4 border-b">
-                <div className="flex items-center gap-2 text-sm text-slate-500 mb-2">
+              <div className="mb-6 pb-4 border-b border-border">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
                   <span className="font-medium">Betreff:</span>
                 </div>
                 <p className={cn(
-                  "text-lg font-medium",
-                  draft?.subject ? "text-slate-900" : "text-slate-400 italic"
+                  "text-base font-medium",
+                  draft?.subject ? "text-foreground" : "text-muted-foreground italic"
                 )}>
                   {draft?.subject || 'Kein Betreff'}
                 </p>
               </div>
 
               {/* Email Body */}
-              <div className="prose prose-slate max-w-none">
+              <div className="prose prose-sm prose-neutral dark:prose-invert max-w-none">
                 {draft?.greeting && (
-                  <p className="text-slate-900">{draft.greeting}</p>
+                  <p className="text-foreground">{draft.greeting}</p>
                 )}
 
                 {(() => {
@@ -187,17 +187,17 @@ export default function ComposerPreview({
                 })()}
 
                 {draft?.signature && (
-                  <div className="mt-6 pt-4 border-t border-slate-100">
-                    <p className="whitespace-pre-line text-slate-700">{draft.signature}</p>
+                  <div className="mt-6 pt-4 border-t border-border">
+                    <p className="whitespace-pre-line text-muted-foreground">{draft.signature}</p>
                   </div>
                 )}
               </div>
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center h-64 text-slate-400">
-              <FileText className="h-12 w-12 mb-3 opacity-30" />
+            <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
+              <FileText className="h-12 w-12 mb-3 opacity-20" />
               <p className="text-sm font-medium">Keine Vorschau verfügbar</p>
-              <p className="text-xs mt-1">Füge Snippets hinzu, um die E-Mail zu sehen</p>
+              <p className="text-xs mt-1 opacity-60">Füge Snippets hinzu, um die E-Mail zu sehen</p>
             </div>
           )}
         </div>

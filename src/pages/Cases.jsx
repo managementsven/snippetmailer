@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import PageShell from "@/components/PageShell";
 import {
   Dialog,
   DialogContent,
@@ -161,30 +161,26 @@ export default function Cases() {
   );
 
   return (
-    <div className="h-screen flex flex-col">
-      <header className="h-16 border-b bg-white flex items-center justify-between px-4 lg:px-6 flex-shrink-0">
-        <div>
-          <h1 className="text-lg font-semibold text-slate-900">Fehlerbilder / Cases</h1>
-          <p className="text-sm text-slate-500">{cases.length} Fehlerbilder</p>
-        </div>
-
+    <PageShell
+      title="Fehlerbilder / Cases"
+      subtitle={`${cases.length} Fehlerbilder`}
+      actions={
         <Button
           onClick={() => {
             setSelectedCase(null);
             resetForm();
             setEditorOpen(true);
           }}
+          size="sm"
           className="gap-2"
         >
           <Plus className="h-4 w-4" />
           Neues Fehlerbild
         </Button>
-      </header>
-
-      {/* Search */}
-      <div className="p-4 border-b bg-white">
+      }
+      toolbar={
         <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Fehlerbilder durchsuchen..."
             value={searchQuery}
@@ -192,26 +188,26 @@ export default function Cases() {
             className="pl-10"
           />
         </div>
-      </div>
-
-      <ScrollArea className="flex-1">
-        <div className="p-4 lg:p-6">
+      }
+      className="p-6"
+    >
+      <div>
           {isLoading ? (
             <div className="flex items-center justify-center h-64">
-              <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
           ) : filteredCases.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-64 text-slate-500">
-              <AlertTriangle className="h-12 w-12 mb-3 opacity-30" />
+            <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
+              <AlertTriangle className="h-12 w-12 mb-3 opacity-20" />
               <p className="text-sm font-medium">Keine Fehlerbilder gefunden</p>
-              <p className="text-xs mt-1">Erstellen Sie Ihr erstes Fehlerbild</p>
+              <p className="text-xs mt-1 opacity-60">Erstellen Sie Ihr erstes Fehlerbild</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
               {filteredCases.map(caseItem => {
                 const IconComponent = getIconComponent(caseItem.icon);
                 return (
-                  <Card key={caseItem.id} className="p-4 hover:shadow-md transition-shadow group">
+                  <Card key={caseItem.id} className="p-4 hover:shadow-lg transition-shadow group rounded-2xl border-border bg-card">
                     <div className="flex items-start gap-3">
                       <div
                         className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
@@ -223,16 +219,16 @@ export default function Cases() {
                         />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-slate-900">{caseItem.name}</h3>
+                        <h3 className="font-semibold text-foreground">{caseItem.name}</h3>
                         {caseItem.description && (
-                          <p className="text-sm text-slate-500 line-clamp-2 mt-1">
+                          <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
                             {caseItem.description}
                           </p>
                         )}
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-1 mt-3 pt-3 border-t opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex items-center gap-1 mt-3 pt-3 border-t border-border opacity-0 group-hover:opacity-100 transition-opacity">
                       <Button
                         variant="ghost"
                         size="sm"
@@ -246,7 +242,7 @@ export default function Cases() {
                         variant="ghost"
                         size="sm"
                         onClick={() => handleDelete(caseItem)}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50 gap-1"
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10 gap-1"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </Button>
@@ -256,8 +252,8 @@ export default function Cases() {
               })}
             </div>
           )}
-        </div>
-      </ScrollArea>
+      </div>
+    </PageShell>
 
       {/* Editor Dialog */}
       <Dialog open={editorOpen} onOpenChange={setEditorOpen}>
