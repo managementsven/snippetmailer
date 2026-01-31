@@ -59,7 +59,6 @@ const COLORS = [
 ];
 
 export default function Cases() {
-  const queryClient = useQueryClient();
   const [editorOpen, setEditorOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedCase, setSelectedCase] = useState(null);
@@ -72,44 +71,10 @@ export default function Cases() {
     color: COLORS[0],
   });
 
-  const { data: cases = [], isLoading } = useQuery({
-    queryKey: ['cases'],
-    queryFn: () => base44.entities.Case.list('name', 100),
-  });
-
-  const createMutation = useMutation({
-    mutationFn: (data) => base44.entities.Case.create(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['cases'] });
-      setEditorOpen(false);
-      resetForm();
-      toast.success('Fehlerbild erstellt');
-    },
-    onError: (error) => {
-      toast.error(`Fehler: ${error.message}`);
-    },
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.Case.update(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['cases'] });
-      setEditorOpen(false);
-      setSelectedCase(null);
-      resetForm();
-      toast.success('Fehlerbild aktualisiert');
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: (id) => base44.entities.Case.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['cases'] });
-      setDeleteDialogOpen(false);
-      setSelectedCase(null);
-      toast.success('Fehlerbild gelöscht');
-    },
-  });
+  const { data: cases = [], isLoading } = useCases();
+  const createMutation = useCreateCase();
+  const updateMutation = useUpdateCase();
+  const deleteMutation = useDeleteCase();
 
   const resetForm = () => {
     setFormData({
@@ -137,15 +102,23 @@ export default function Cases() {
   };
 
   const handleSave = () => {
-    if (!formData.name.trim()) {
-      toast.error('Bitte geben Sie einen Namen ein');
-      return;
-    }
+    if (!formData.name.trim()) return;
 
     if (selectedCase) {
-      updateMutation.mutate({ id: selectedCase.id, data: formData });
+      updateMutation.mutate({ id: selectedCase.id, data: formData }, {
+        onSuccess: () => {
+          setEditorOpen(false);
+          setSelectedCase(null);
+          resetForm();
+        }
+      });
     } else {
-      createMutation.mutate(formData);
+      createMutation.mutate(formData, {
+        onSuccess: () => {
+          setEditorOpen(false);
+          resetForm();
+        }
+      });
     }
   };
 
@@ -357,8 +330,13 @@ export default function Cases() {
           <AlertDialogFooter>
             <AlertDialogCancel>Abbrechen</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => deleteMutation.mutate(selectedCase?.id)}
-              className="bg-red-600 hover:bg-red-700"
+              onClick={() => deleteMutation.mutate(selectedCase?.id, {
+                onSuccess: () => {
+                  setDeleteDialogOpen(false);
+                  setSelectedCase(null);
+                }
+              })}
+              className="bg-destructive hover:bg-destructive/90"
             >
               Löschen
             </AlertDialogAction>
