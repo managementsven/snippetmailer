@@ -140,7 +140,7 @@ export default function SnippetEditor({
                   value={formData.content}
                   onChange={(e) => setFormData({ ...formData, content: e.target.value })}
                   placeholder="Snippet-Inhalt eingeben... (Markdown wird unterstützt)"
-                  className="min-h-[300px] font-mono text-sm"
+                  className="min-h-[350px] font-mono text-sm leading-relaxed bg-input border-border"
                 />
               </div>
 
@@ -158,9 +158,9 @@ export default function SnippetEditor({
             </TabsContent>
 
             <TabsContent value="preview" className="mt-0">
-              <div className="bg-white border rounded-lg p-6 min-h-[300px]">
-                <h2 className="text-xl font-semibold mb-4">{formData.title || 'Kein Titel'}</h2>
-                <div className="prose prose-slate max-w-none">
+              <div className="preview-area border border-border rounded-xl p-8 min-h-[400px]">
+                <h2 className="text-2xl font-semibold mb-6 text-foreground tracking-tight">{formData.title || 'Kein Titel'}</h2>
+                <div className="prose-dark prose prose-sm max-w-none">
                   <ReactMarkdown>{formData.content || '*Kein Inhalt*'}</ReactMarkdown>
                 </div>
               </div>
@@ -205,7 +205,7 @@ export default function SnippetEditor({
 
               <div className="space-y-2">
                 <Label>Kategorien</Label>
-                <div className="flex flex-wrap gap-2 p-3 border rounded-lg bg-slate-50 min-h-[60px]">
+                <div className="flex flex-wrap gap-2 p-3 border border-border rounded-lg bg-muted/30 min-h-[60px]">
                   {categories.map(cat => (
                     <Badge
                       key={cat.id}
@@ -228,7 +228,7 @@ export default function SnippetEditor({
 
               <div className="space-y-2">
                 <Label>Fehlerbilder / Cases</Label>
-                <div className="flex flex-wrap gap-2 p-3 border rounded-lg bg-slate-50 min-h-[60px]">
+                <div className="flex flex-wrap gap-2 p-3 border border-border rounded-lg bg-muted/30 min-h-[60px]">
                   {cases.map(c => (
                     <Badge
                       key={c.id}
@@ -250,7 +250,7 @@ export default function SnippetEditor({
 
               <div className="space-y-2">
                 <Label>Tags</Label>
-                <div className="flex flex-wrap gap-2 p-3 border rounded-lg bg-slate-50 min-h-[60px]">
+                <div className="flex flex-wrap gap-2 p-3 border border-border rounded-lg bg-muted/30 min-h-[60px]">
                   {tags.map(tag => (
                     <Badge
                       key={tag.id}

@@ -107,6 +107,7 @@ export default function ComposerEmailBuilder({
                   value={draft?.greeting || ''}
                   onChange={(e) => onUpdateDraft({ greeting: e.target.value })}
                   placeholder="z.B. Sehr geehrte Damen und Herren,"
+                  className="bg-input border-border"
                 />
               </div>
             </CollapsibleContent>
@@ -245,7 +246,7 @@ export default function ComposerEmailBuilder({
                                     <Textarea
                                       value={editContent}
                                       onChange={(e) => setEditContent(e.target.value)}
-                                      className="min-h-[150px] font-mono text-sm"
+                                      className="min-h-[180px] font-mono text-sm leading-relaxed bg-input border-border"
                                       autoFocus
                                     />
                                     <div className="flex justify-end gap-2">
@@ -265,7 +266,7 @@ export default function ComposerEmailBuilder({
                                     </div>
                                   </div>
                                 ) : (
-                                  <div className="prose prose-sm prose-slate max-w-none">
+                                  <div className="prose-dark prose prose-sm max-w-none">
                                     <ReactMarkdown>{displayContent}</ReactMarkdown>
                                   </div>
                                 )}
@@ -309,7 +310,7 @@ export default function ComposerEmailBuilder({
                   value={draft?.signature || ''}
                   onChange={(e) => onUpdateDraft({ signature: e.target.value })}
                   placeholder="Mit freundlichen Grüßen,&#10;Max Mustermann"
-                  className="min-h-[80px]"
+                  className="min-h-[80px] bg-input border-border"
                 />
               </div>
             </CollapsibleContent>
