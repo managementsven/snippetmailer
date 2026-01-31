@@ -253,7 +253,6 @@ export default function Cases() {
             </div>
           )}
       </div>
-    </PageShell>
 
       {/* Editor Dialog */}
       <Dialog open={editorOpen} onOpenChange={setEditorOpen}>
@@ -363,6 +362,6 @@ export default function Cases() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </PageShell>
   );
 }
