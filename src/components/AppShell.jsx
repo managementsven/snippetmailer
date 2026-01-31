@@ -15,6 +15,7 @@ import {
   LogOut,
   ChevronLeft,
   ChevronRight,
+  Zap,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -67,10 +68,18 @@ export default function AppShell({ children, currentPageName }) {
         )}
       >
         {/* Logo */}
-        <div className="h-16 border-b border-border flex items-center justify-center px-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
-            <Mail className="h-5 w-5 text-white" />
+        <div className={cn(
+          "h-16 border-b border-border flex items-center px-3 transition-all duration-300",
+          sidebarExpanded ? "justify-start gap-2" : "justify-center"
+        )}>
+          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-indigo-500 via-indigo-600 to-cyan-500 flex items-center justify-center flex-shrink-0">
+            <Zap className="h-5 w-5 text-white" />
           </div>
+          {sidebarExpanded && (
+            <span className="text-2xl font-bold tracking-tighter bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">
+              NEXIS
+            </span>
+          )}
         </div>
 
         {/* Nav Items */}
