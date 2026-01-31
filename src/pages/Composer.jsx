@@ -1,6 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { base44 } from "@/api/base44Client";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import React, { useState, useEffect, useCallback } from "react";
 import { DragDropContext } from "@hello-pangea/dnd";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -33,9 +31,13 @@ import { debounce } from "lodash";
 import SnippetPickerDrawer from "../components/composer/SnippetPickerDrawer";
 import ComposerEmailBuilder from "../components/composer/ComposerEmailBuilder";
 import ComposerPreview from "../components/composer/ComposerPreview";
+import { useCurrentUser } from "@/components/api/useAuth";
+import { useSnippets } from "@/components/api/useSnippets";
+import { useCategories, useTags, useCases } from "@/components/api/useCollections";
+import { useTemplates } from "@/components/api/useTemplates";
+import { useSaveDraft } from "@/components/api/useDrafts";
 
 export default function Composer() {
-  const queryClient = useQueryClient();
   const [snippetPickerOpen, setSnippetPickerOpen] = useState(false);
   
   // Filters
@@ -53,63 +55,31 @@ export default function Composer() {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [lastSaved, setLastSaved] = useState(null);
 
-  // Queries
-  const { data: user } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
-  });
-
-  const { data: snippets = [] } = useQuery({
-    queryKey: ['snippets'],
-    queryFn: () => base44.entities.Snippet.list('-updated_date', 500),
-  });
-
-  const { data: categories = [] } = useQuery({
-    queryKey: ['categories'],
-    queryFn: () => base44.entities.Category.list('sort_order', 100),
-  });
-
-  const { data: tags = [] } = useQuery({
-    queryKey: ['tags'],
-    queryFn: () => base44.entities.Tag.list('name', 100),
-  });
-
-  const { data: cases = [] } = useQuery({
-    queryKey: ['cases'],
-    queryFn: () => base44.entities.Case.list('name', 100),
-  });
-
-  const { data: templates = [] } = useQuery({
-    queryKey: ['templates'],
-    queryFn: () => base44.entities.Template.filter({ is_active: true }, 'name', 100),
-  });
+  // Hooks
+  const { data: user } = useCurrentUser();
+  const { data: snippets = [] } = useSnippets();
+  const { data: categories = [] } = useCategories();
+  const { data: tags = [] } = useTags();
+  const { data: cases = [] } = useCases();
+  const { data: templates = [] } = useTemplates();
 
   // Mutations
-  const saveDraftMutation = useMutation({
-    mutationFn: async (data) => {
-      if (currentDraftId) {
-        return base44.entities.Draft.update(currentDraftId, data);
-      } else {
-        return base44.entities.Draft.create(data);
-      }
-    },
-    onSuccess: (result) => {
-      if (!currentDraftId) {
-        setCurrentDraftId(result.id);
-      }
-      setHasUnsavedChanges(false);
-      setLastSaved(new Date());
-      queryClient.invalidateQueries({ queryKey: ['drafts'] });
-      toast.success('Entwurf gespeichert');
-    },
-  });
+  const saveDraftMutation = useSaveDraft();
 
   // Auto-save debounced
   const debouncedSave = useCallback(
     debounce((data) => {
-      saveDraftMutation.mutate(data);
+      saveDraftMutation.mutate({ id: currentDraftId, data }, {
+        onSuccess: (result) => {
+          if (!currentDraftId && result?.id) {
+            setCurrentDraftId(result.id);
+          }
+          setHasUnsavedChanges(false);
+          setLastSaved(new Date());
+        }
+      });
     }, 3000),
-    [currentDraftId]
+    [currentDraftId, saveDraftMutation]
   );
 
   // Track changes
@@ -343,7 +313,18 @@ export default function Composer() {
 
             <Button
               size="sm"
-              onClick={() => saveDraftMutation.mutate(draftData)}
+              onClick={() => {
+                saveDraftMutation.mutate({ id: currentDraftId, data: draftData }, {
+                  onSuccess: (result) => {
+                    if (!currentDraftId && result?.id) {
+                      setCurrentDraftId(result.id);
+                    }
+                    setHasUnsavedChanges(false);
+                    setLastSaved(new Date());
+                    toast.success('Entwurf gespeichert');
+                  }
+                });
+              }}
               disabled={saveDraftMutation.isPending}
               className="gap-2 h-8"
             >

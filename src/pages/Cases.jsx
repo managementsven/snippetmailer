@@ -1,12 +1,11 @@
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import PageShell from "@/components/PageShell";
+import Guard from "@/components/Guard";
 import {
   Dialog,
   DialogContent,
@@ -39,8 +38,8 @@ import {
   Power,
   RefreshCw,
 } from "lucide-react";
-import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useCases, useCreateCase, useUpdateCase, useDeleteCase } from "@/components/api/useCollections";
 
 const ICONS = [
   { name: 'Power', icon: Power },
@@ -165,18 +164,20 @@ export default function Cases() {
       title="Fehlerbilder / Cases"
       subtitle={`${cases.length} Fehlerbilder`}
       actions={
-        <Button
-          onClick={() => {
-            setSelectedCase(null);
-            resetForm();
-            setEditorOpen(true);
-          }}
-          size="sm"
-          className="gap-2"
-        >
-          <Plus className="h-4 w-4" />
-          Neues Fehlerbild
-        </Button>
+        <Guard permissions={['admin']}>
+          <Button
+            onClick={() => {
+              setSelectedCase(null);
+              resetForm();
+              setEditorOpen(true);
+            }}
+            size="sm"
+            className="gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            Neues Fehlerbild
+          </Button>
+        </Guard>
       }
       toolbar={
         <div className="relative max-w-md">
@@ -228,25 +229,27 @@ export default function Cases() {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-1 mt-3 pt-3 border-t border-border opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleEdit(caseItem)}
-                        className="flex-1 gap-1"
-                      >
-                        <Edit className="h-3.5 w-3.5" />
-                        Bearbeiten
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDelete(caseItem)}
-                        className="text-destructive hover:text-destructive hover:bg-destructive/10 gap-1"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
+                    <Guard permissions={['admin']}>
+                      <div className="flex items-center gap-1 mt-3 pt-3 border-t border-border opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEdit(caseItem)}
+                          className="flex-1 gap-1"
+                        >
+                          <Edit className="h-3.5 w-3.5" />
+                          Bearbeiten
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDelete(caseItem)}
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10 gap-1"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    </Guard>
                   </Card>
                 );
               })}

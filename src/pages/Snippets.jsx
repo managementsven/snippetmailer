@@ -1,6 +1,4 @@
 import React, { useState, useMemo } from "react";
-import { base44 } from "@/api/base44Client";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -16,12 +14,10 @@ import {
 import {
   Plus,
   FileText,
-  History,
   Loader2,
   LayoutGrid,
   List,
 } from "lucide-react";
-import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 import SnippetCard from "../components/snippets/SnippetCard";
@@ -29,9 +25,13 @@ import SnippetFilters from "../components/snippets/SnippetFilters";
 import SnippetEditor from "../components/snippets/SnippetEditor";
 import SnippetVersionHistory from "../components/snippets/SnippetVersionHistory";
 import PageShell from "@/components/PageShell";
+import Guard from "@/components/Guard";
+import { useCurrentUser } from "@/components/api/useAuth";
+import { useSnippets, useFavorites, useSnippetVersions, useCreateSnippet, useUpdateSnippet, useArchiveSnippet, useToggleFavorite, useRestoreVersion } from "@/components/api/useSnippets";
+import { useCategories, useTags, useCases } from "@/components/api/useCollections";
+import { isAdmin, isEditor, canPublish, canDeleteSnippet, canEditSnippet } from "@/components/lib/permissions";
 
 export default function Snippets() {
-  const queryClient = useQueryClient();
   const [viewMode, setViewMode] = useState('grid');
   
   // Filters
@@ -49,166 +49,60 @@ export default function Snippets() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedSnippet, setSelectedSnippet] = useState(null);
 
-  // Queries
-  const { data: user } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
-  });
-
-  const { data: snippets = [], isLoading: snippetsLoading } = useQuery({
-    queryKey: ['snippets'],
-    queryFn: () => base44.entities.Snippet.list('-updated_date', 500),
-  });
-
-  const { data: categories = [] } = useQuery({
-    queryKey: ['categories'],
-    queryFn: () => base44.entities.Category.list('sort_order', 100),
-  });
-
-  const { data: tags = [] } = useQuery({
-    queryKey: ['tags'],
-    queryFn: () => base44.entities.Tag.list('name', 100),
-  });
-
-  const { data: cases = [] } = useQuery({
-    queryKey: ['cases'],
-    queryFn: () => base44.entities.Case.list('name', 100),
-  });
-
-  const { data: favorites = [] } = useQuery({
-    queryKey: ['favorites', user?.email],
-    queryFn: () => base44.entities.Favorite.filter({ user_email: user?.email }),
-    enabled: !!user?.email,
-  });
-
-  const { data: versions = [] } = useQuery({
-    queryKey: ['snippetVersions', selectedSnippet?.id],
-    queryFn: () => base44.entities.SnippetVersion.filter({ snippet_id: selectedSnippet?.id }, '-version_number', 50),
-    enabled: !!selectedSnippet?.id && historyOpen,
-  });
-
-  const isAdmin = user?.app_role === 'admin' || user?.role === 'admin';
-  const isEditor = user?.app_role === 'editor' || isAdmin;
-  const canPublish = isAdmin;
+  // Hooks
+  const { data: user } = useCurrentUser();
+  const { data: snippets = [], isLoading: snippetsLoading } = useSnippets();
+  const { data: categories = [] } = useCategories();
+  const { data: tags = [] } = useTags();
+  const { data: cases = [] } = useCases();
+  const { data: favorites = [] } = useFavorites(user?.email);
+  const { data: versions = [] } = useSnippetVersions(selectedSnippet?.id);
 
   // Mutations
-  const createSnippetMutation = useMutation({
-    mutationFn: (data) => base44.entities.Snippet.create({
-      ...data,
-      last_modified_by: user?.email,
-      version: 1,
-    }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['snippets'] });
-      setEditorOpen(false);
-      toast.success('Snippet erstellt');
-    },
-    onError: (error) => {
-      toast.error(`Fehler: ${error.message}`);
-    },
-  });
-
-  const updateSnippetMutation = useMutation({
-    mutationFn: async ({ id, data, changeNote }) => {
-      const snippet = snippets.find(s => s.id === id);
-      
-      // Create version history
-      await base44.entities.SnippetVersion.create({
-        snippet_id: id,
-        version_number: snippet.version || 1,
-        title: snippet.title,
-        content: snippet.content,
-        language: snippet.language,
-        categories: snippet.categories,
-        tags: snippet.tags,
-        cases: snippet.cases,
-        change_note: changeNote,
-        changed_by: user?.email,
-      });
-
-      // Update snippet
-      return base44.entities.Snippet.update(id, {
-        ...data,
-        last_modified_by: user?.email,
-        version: (snippet.version || 1) + 1,
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['snippets'] });
-      queryClient.invalidateQueries({ queryKey: ['snippetVersions'] });
-      setEditorOpen(false);
-      setSelectedSnippet(null);
-      toast.success('Snippet aktualisiert');
-    },
-    onError: (error) => {
-      toast.error(`Fehler: ${error.message}`);
-    },
-  });
-
-  const deleteSnippetMutation = useMutation({
-    mutationFn: (id) => base44.entities.Snippet.update(id, { status: 'archived' }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['snippets'] });
-      setDeleteDialogOpen(false);
-      setSelectedSnippet(null);
-      toast.success('Snippet archiviert');
-    },
-  });
-
-  const toggleFavoriteMutation = useMutation({
-    mutationFn: async (snippet) => {
-      const existing = favorites.find(f => f.snippet_id === snippet.id);
-      if (existing) {
-        await base44.entities.Favorite.delete(existing.id);
-      } else {
-        await base44.entities.Favorite.create({
-          snippet_id: snippet.id,
-          user_email: user?.email,
-        });
+  const createSnippetMutation = useCreateSnippet(user);
+  const updateSnippetMutation = useUpdateSnippet(user, snippets);
+  const deleteSnippetMutation = useArchiveSnippet();
+  const toggleFavoriteMutation = useToggleFavorite(user);
+  const restoreVersionMutation = useRestoreVersion(user, selectedSnippet);
+  
+  // Handlers
+  const handleCreateSnippet = (data) => {
+    createSnippetMutation.mutate(data, {
+      onSuccess: () => {
+        setEditorOpen(false);
       }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['favorites'] });
-    },
-  });
+    });
+  };
 
-  const restoreVersionMutation = useMutation({
-    mutationFn: async (version) => {
-      const currentSnippet = selectedSnippet;
-      
-      // Create version of current state
-      await base44.entities.SnippetVersion.create({
-        snippet_id: currentSnippet.id,
-        version_number: currentSnippet.version || 1,
-        title: currentSnippet.title,
-        content: currentSnippet.content,
-        language: currentSnippet.language,
-        categories: currentSnippet.categories,
-        tags: currentSnippet.tags,
-        cases: currentSnippet.cases,
-        change_note: `Wiederhergestellt von Version ${version.version_number}`,
-        changed_by: user?.email,
-      });
+  const handleUpdateSnippet = ({ id, data, changeNote }) => {
+    updateSnippetMutation.mutate({ id, data, changeNote }, {
+      onSuccess: () => {
+        setEditorOpen(false);
+        setSelectedSnippet(null);
+      }
+    });
+  };
 
-      // Restore old version
-      return base44.entities.Snippet.update(currentSnippet.id, {
-        title: version.title,
-        content: version.content,
-        language: version.language,
-        categories: version.categories,
-        tags: version.tags,
-        cases: version.cases,
-        last_modified_by: user?.email,
-        version: (currentSnippet.version || 1) + 1,
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['snippets'] });
-      queryClient.invalidateQueries({ queryKey: ['snippetVersions'] });
-      setHistoryOpen(false);
-      toast.success('Version wiederhergestellt');
-    },
-  });
+  const handleDeleteSnippet = () => {
+    deleteSnippetMutation.mutate(selectedSnippet?.id, {
+      onSuccess: () => {
+        setDeleteDialogOpen(false);
+        setSelectedSnippet(null);
+      }
+    });
+  };
+
+  const handleToggleFavorite = (snippet) => {
+    toggleFavoriteMutation.mutate({ snippet, favorites });
+  };
+
+  const handleRestoreVersion = (version) => {
+    restoreVersionMutation.mutate(version, {
+      onSuccess: () => {
+        setHistoryOpen(false);
+      }
+    });
+  };
 
   // Filter snippets
   const filteredSnippets = useMemo(() => {
@@ -268,9 +162,9 @@ export default function Snippets() {
 
   const handleSaveSnippet = (data, changeNote) => {
     if (selectedSnippet) {
-      updateSnippetMutation.mutate({ id: selectedSnippet.id, data, changeNote });
+      handleUpdateSnippet({ id: selectedSnippet.id, data, changeNote });
     } else {
-      createSnippetMutation.mutate(data);
+      handleCreateSnippet(data);
     }
   };
 
@@ -317,18 +211,19 @@ export default function Snippets() {
             </Button>
           </div>
 
-          {isEditor && (
+          <Guard permissions={['editor']}>
             <Button
               onClick={() => {
                 setSelectedSnippet(null);
                 setEditorOpen(true);
               }}
+              size="sm"
               className="gap-2"
             >
               <Plus className="h-4 w-4" />
               Neues Snippet
             </Button>
-          )}
+          </Guard>
         </>
       }
       toolbar={
@@ -379,10 +274,10 @@ export default function Snippets() {
                   tags={tags}
                   cases={cases}
                   isFavorite={isFavorite(snippet)}
-                  onToggleFavorite={() => toggleFavoriteMutation.mutate(snippet)}
+                  onToggleFavorite={() => handleToggleFavorite(snippet)}
                   onView={() => handleViewHistory(snippet)}
-                  onEdit={isEditor ? () => handleEdit(snippet) : undefined}
-                  onDelete={isAdmin ? () => handleDelete(snippet) : undefined}
+                  onEdit={canEditSnippet(user, snippet) ? () => handleEdit(snippet) : undefined}
+                  onDelete={canDeleteSnippet(user, snippet) ? () => handleDelete(snippet) : undefined}
                   compact={viewMode === 'list'}
                 />
               ))}
@@ -400,7 +295,7 @@ export default function Snippets() {
         cases={cases}
         onSave={handleSaveSnippet}
         isLoading={createSnippetMutation.isPending || updateSnippetMutation.isPending}
-        canPublish={canPublish}
+        canPublish={canPublish(user)}
       />
 
       {/* Version History Dialog */}
@@ -409,7 +304,7 @@ export default function Snippets() {
         onOpenChange={setHistoryOpen}
         versions={versions}
         currentSnippet={selectedSnippet}
-        onRestore={restoreVersionMutation.mutate}
+        onRestore={handleRestoreVersion}
         isLoading={restoreVersionMutation.isPending}
       />
 
@@ -426,8 +321,8 @@ export default function Snippets() {
           <AlertDialogFooter>
             <AlertDialogCancel>Abbrechen</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => deleteSnippetMutation.mutate(selectedSnippet?.id)}
-              className="bg-red-600 hover:bg-red-700"
+              onClick={handleDeleteSnippet}
+              className="bg-destructive hover:bg-destructive/90"
             >
               Archivieren
             </AlertDialogAction>
