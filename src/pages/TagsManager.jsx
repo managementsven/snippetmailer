@@ -132,10 +132,10 @@ export default function TagsManager() {
 
   return (
     <div className="h-screen flex flex-col">
-      <header className="h-16 border-b bg-white flex items-center justify-between px-4 lg:px-6 flex-shrink-0">
+      <header className="h-20 border-b border-border bg-card flex items-center justify-between px-6 lg:px-8 flex-shrink-0">
         <div>
-          <h1 className="text-lg font-semibold text-slate-900">Tags</h1>
-          <p className="text-sm text-slate-500">{tags.length} Tags</p>
+          <h1 className="text-2xl font-semibold text-foreground tracking-tight">Tags</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">{tags.length} Tags</p>
         </div>
 
         <Button
@@ -144,7 +144,7 @@ export default function TagsManager() {
             resetForm();
             setEditorOpen(true);
           }}
-          className="gap-2"
+          className="gap-2 h-10"
         >
           <Plus className="h-4 w-4" />
           Neuer Tag
@@ -152,58 +152,58 @@ export default function TagsManager() {
       </header>
 
       {/* Search */}
-      <div className="p-4 border-b bg-white">
+      <div className="p-5 border-b border-border bg-card/50">
         <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
           <Input
             placeholder="Tags durchsuchen..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
+            className="pl-10 h-11 bg-input border-border"
           />
         </div>
       </div>
 
       <ScrollArea className="flex-1">
-        <div className="p-4 lg:p-6">
+        <div className="p-6 lg:p-8">
           {isLoading ? (
-            <div className="flex items-center justify-center h-64">
-              <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
+            <div className="flex items-center justify-center h-96">
+              <Loader2 className="h-10 w-10 animate-spin text-muted-foreground" />
             </div>
           ) : filteredTags.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-64 text-slate-500">
-              <Tags className="h-12 w-12 mb-3 opacity-30" />
-              <p className="text-sm font-medium">Keine Tags gefunden</p>
-              <p className="text-xs mt-1">Erstellen Sie Ihren ersten Tag</p>
+            <div className="flex flex-col items-center justify-center h-96 text-muted-foreground bg-card/30 rounded-2xl border border-border/50">
+              <Tags className="h-16 w-16 mb-5 opacity-10" />
+              <p className="text-base font-semibold text-foreground/70">Keine Tags gefunden</p>
+              <p className="text-sm mt-2 text-muted-foreground/60">Erstellen Sie Ihren ersten Tag</p>
             </div>
           ) : (
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-3">
               {filteredTags.map(tag => (
                 <Card
                   key={tag.id}
-                  className="p-3 flex items-center gap-3 hover:shadow-md transition-shadow group"
+                  className="px-4 py-3 flex items-center gap-3 hover:shadow-lg transition-all duration-200 group border-border bg-card"
                 >
                   <div
                     className="w-3 h-3 rounded-full flex-shrink-0"
                     style={{ backgroundColor: tag.color }}
                   />
-                  <span className="font-medium text-slate-700">{tag.name}</span>
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <span className="font-medium text-foreground text-sm">{tag.name}</span>
+                  <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-6 w-6"
+                      className="h-7 w-7 text-muted-foreground hover:text-foreground"
                       onClick={() => handleEdit(tag)}
                     >
-                      <Edit className="h-3 w-3" />
+                      <Edit className="h-3.5 w-3.5" />
                     </Button>
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-6 w-6 text-red-500 hover:text-red-600 hover:bg-red-50"
+                      className="h-7 w-7 text-muted-foreground hover:text-destructive"
                       onClick={() => handleDelete(tag)}
                     >
-                      <Trash2 className="h-3 w-3" />
+                      <Trash2 className="h-3.5 w-3.5" />
                     </Button>
                   </div>
                 </Card>

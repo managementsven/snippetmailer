@@ -161,10 +161,10 @@ export default function Categories() {
 
   return (
     <div className="h-screen flex flex-col">
-      <header className="h-16 border-b bg-white flex items-center justify-between px-4 lg:px-6 flex-shrink-0">
+      <header className="h-20 border-b border-border bg-card flex items-center justify-between px-6 lg:px-8 flex-shrink-0">
         <div>
-          <h1 className="text-lg font-semibold text-slate-900">Kategorien</h1>
-          <p className="text-sm text-slate-500">{categories.length} Kategorien</p>
+          <h1 className="text-2xl font-semibold text-foreground tracking-tight">Kategorien</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">{categories.length} Kategorien</p>
         </div>
 
         <Button
@@ -173,7 +173,7 @@ export default function Categories() {
             resetForm();
             setEditorOpen(true);
           }}
-          className="gap-2"
+          className="gap-2 h-10"
         >
           <Plus className="h-4 w-4" />
           Neue Kategorie
@@ -181,16 +181,16 @@ export default function Categories() {
       </header>
 
       <ScrollArea className="flex-1">
-        <div className="p-4 lg:p-6 max-w-2xl">
+        <div className="p-6 lg:p-8 max-w-3xl">
           {isLoading ? (
-            <div className="flex items-center justify-center h-64">
-              <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
+            <div className="flex items-center justify-center h-96">
+              <Loader2 className="h-10 w-10 animate-spin text-muted-foreground" />
             </div>
           ) : categories.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-64 text-slate-500">
-              <FolderOpen className="h-12 w-12 mb-3 opacity-30" />
-              <p className="text-sm font-medium">Keine Kategorien vorhanden</p>
-              <p className="text-xs mt-1">Erstellen Sie Ihre erste Kategorie</p>
+            <div className="flex flex-col items-center justify-center h-96 text-muted-foreground bg-card/30 rounded-2xl border border-border/50">
+              <FolderOpen className="h-16 w-16 mb-5 opacity-10" />
+              <p className="text-base font-semibold text-foreground/70">Keine Kategorien vorhanden</p>
+              <p className="text-sm mt-2 text-muted-foreground/60">Erstellen Sie Ihre erste Kategorie</p>
             </div>
           ) : (
             <DragDropContext onDragEnd={handleDragEnd}>
@@ -199,7 +199,7 @@ export default function Categories() {
                   <div
                     ref={provided.innerRef}
                     {...provided.droppableProps}
-                    className="space-y-2"
+                    className="space-y-3"
                   >
                     {categories.map((category, index) => (
                       <Draggable key={category.id} draggableId={category.id} index={index}>
@@ -210,28 +210,28 @@ export default function Categories() {
                             className={cn(snapshot.isDragging && "z-50")}
                           >
                             <Card className={cn(
-                              "p-4 transition-shadow",
-                              snapshot.isDragging && "shadow-xl"
+                              "p-5 transition-all duration-200 border-border bg-card hover:shadow-lg group",
+                              snapshot.isDragging && "shadow-2xl ring-2 ring-primary/30"
                             )}>
-                              <div className="flex items-center gap-4">
+                              <div className="flex items-center gap-5">
                                 <div {...provided.dragHandleProps}>
-                                  <GripVertical className="h-5 w-5 text-slate-300 cursor-grab" />
+                                  <GripVertical className="h-5 w-5 text-muted-foreground/30 cursor-grab active:cursor-grabbing" />
                                 </div>
                                 <div
                                   className="w-4 h-4 rounded-full flex-shrink-0"
                                   style={{ backgroundColor: category.color }}
                                 />
                                 <div className="flex-1 min-w-0">
-                                  <h3 className="font-medium text-slate-900">{category.name}</h3>
+                                  <h3 className="font-semibold text-foreground text-base">{category.name}</h3>
                                   {category.description && (
-                                    <p className="text-sm text-slate-500 truncate">{category.description}</p>
+                                    <p className="text-sm text-muted-foreground/70 truncate mt-0.5">{category.description}</p>
                                   )}
                                 </div>
-                                <div className="flex items-center gap-1">
+                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                   <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="h-8 w-8"
+                                    className="h-9 w-9 text-muted-foreground hover:text-foreground"
                                     onClick={() => handleEdit(category)}
                                   >
                                     <Edit className="h-4 w-4" />
@@ -239,7 +239,7 @@ export default function Categories() {
                                   <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50"
+                                    className="h-9 w-9 text-muted-foreground hover:text-destructive"
                                     onClick={() => handleDelete(category)}
                                   >
                                     <Trash2 className="h-4 w-4" />
